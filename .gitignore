@@ -1,0 +1,24 @@
+# .NET
+bin/
+obj/
+*.user
+
+# Node / Angular
+node_modules/
+.angular/
+dist/
+
+# Build do Angular copiado para a API
+backend/BarFlow.Api/wwwroot/*
+!backend/BarFlow.Api/wwwroot/LEIA-ME.txt
+
+# Segredos locais (senhas, chave JWT): nunca versionar
+.env
+appsettings.Local.json
+appsettings.*.Local.json
+
+# Diversos
+.vs/
+.vscode/*
+!.vscode/extensions.json
+*.log

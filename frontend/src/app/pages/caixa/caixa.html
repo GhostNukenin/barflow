@@ -1,0 +1,128 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Caixa</h1>
+      <span class="muted">{{ tables().length }} {{ tables().length === 1 ? 'mesa aberta' : 'mesas abertas' }}</span>
+    </div>
+    <div class="day card flat">
+      <span class="muted small">Recebido hoje</span>
+      <strong class="num">{{ dayTotal() | money }}</strong>
+      @if (byMethod().length) {
+        <span class="small muted">
+          @for (m of byMethod(); track m.method; let last = $last) {
+            {{ PAYMENT_LABEL[m.method] }} {{ m.amount | money }}{{ last ? '' : ' · ' }}
+          }
+        </span>
+      }
+    </div>
+  </div>
+
+  <div class="layout">
+    <section class="tables">
+      @for (t of tables(); track t.tableNumber) {
+        <button class="tcard" [class.active]="selected() === t.tableNumber" (click)="select(t)">
+          <div class="row between">
+            <span class="tnum">Mesa {{ t.tableNumber }}</span>
+            <span class="pill" [class]="t.allDelivered ? 'st-Entregue' : 'st-EmPreparo'">
+              {{ t.allDelivered ? 'Tudo entregue' : 'Em andamento' }}
+            </span>
+          </div>
+          <strong class="tval num">{{ t.subtotal | money }}</strong>
+          <span class="small muted">{{ t.orderCount }} {{ t.orderCount === 1 ? 'pedido' : 'pedidos' }} · aberta há {{ openMinutes(t) }}</span>
+        </button>
+      } @empty {
+        <div class="empty card"><span class="big">🧾</span>Nenhuma mesa com conta aberta.</div>
+      }
+    </section>
+
+    <section class="detail card">
+      @if (current(); as t) {
+        <div class="row between">
+          <h2>Conta · Mesa {{ t.tableNumber }}</h2>
+          <button class="btn ghost sm" (click)="selected.set(null)">Fechar</button>
+        </div>
+        <span class="muted small">Aberta às {{ t.openedAt | hora }}</span>
+
+        <table class="table items">
+          <thead>
+            <tr><th>Item</th><th class="right">Qtd</th><th class="right">Unit.</th><th class="right">Total</th></tr>
+          </thead>
+          <tbody>
+            @for (c of consolidated(); track c.name + c.unitPrice) {
+              <tr>
+                <td>{{ c.name }}</td>
+                <td class="right num">{{ c.quantity }}</td>
+                <td class="right num">{{ c.unitPrice | money }}</td>
+                <td class="right num">{{ c.quantity * c.unitPrice | money }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <button class="link" (click)="showOrders.set(!showOrders())">
+          {{ showOrders() ? 'Ocultar' : 'Ver' }} os {{ t.orderCount }} pedidos separados
+        </button>
+        @if (showOrders()) {
+          <div class="orders">
+            @for (o of t.orders; track o.id) {
+              <div class="o-row">
+                <span>#{{ o.id }} · {{ o.createdAt | hora }} · {{ o.waiterName }}</span>
+                <span class="pill" [class]="'st-' + o.status">{{ STATUS_LABEL[o.status] }}</span>
+                <strong class="num">{{ o.total | money }}</strong>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="sum">
+          <div class="row between"><span>Subtotal</span><span class="num">{{ t.subtotal | money }}</span></div>
+          <div class="row between">
+            <label class="check">
+              <input type="checkbox" [checked]="includeFee()" (change)="includeFee.set(!includeFee())" />
+              Taxa de serviço ({{ settings.settings().serviceFeePercent }}%)
+            </label>
+            <span class="num">{{ fee() | money }}</span>
+          </div>
+          <div class="row between grand"><span>Total</span><strong class="num">{{ total() | money }}</strong></div>
+        </div>
+
+        <div class="methods">
+          @for (m of methods; track m) {
+            <button class="chip" [class.active]="method() === m" (click)="method.set(m)">{{ PAYMENT_LABEL[m] }}</button>
+          }
+        </div>
+
+        <button class="btn success lg block" [disabled]="paying()" (click)="pay()">
+          {{ paying() ? 'Registrando…' : 'Registrar pagamento · ' + (total() | money) }}
+        </button>
+      } @else {
+        <div class="empty"><span class="big">👈</span>Selecione uma mesa para conferir a conta.</div>
+      }
+    </section>
+  </div>
+
+  @if (payments().length) {
+    <section class="card flat" style="margin-top: 16px">
+      <h3 style="margin-bottom: 8px">Pagamentos de hoje</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th>Hora</th><th>Mesa</th><th>Forma</th><th class="right">Taxa</th><th class="right">Valor</th><th class="hide-sm">Caixa</th></tr>
+          </thead>
+          <tbody>
+            @for (p of payments(); track p.id) {
+              <tr>
+                <td class="num">{{ p.createdAt | hora }}</td>
+                <td>{{ p.tableNumber }}</td>
+                <td>{{ PAYMENT_LABEL[p.method] }}</td>
+                <td class="right num">{{ p.serviceFee | money }}</td>
+                <td class="right num"><strong>{{ p.amount | money }}</strong></td>
+                <td class="hide-sm">{{ p.cashierName }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>

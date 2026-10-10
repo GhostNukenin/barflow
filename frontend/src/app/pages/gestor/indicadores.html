@@ -1,0 +1,153 @@
+<div class="page-head">
+  <div>
+    <h1>Indicadores</h1>
+    <span class="muted">Quanto tempo o pedido leva da mesa até a cozinha, e o resto do fluxo</span>
+  </div>
+  <div class="chips">
+    <button class="chip" [class.active]="period() === 'hoje'" (click)="setPeriod('hoje')">Hoje</button>
+    <button class="chip" [class.active]="period() === '7d'" (click)="setPeriod('7d')">7 dias</button>
+    <button class="chip" [class.active]="period() === '30d'" (click)="setPeriod('30d')">30 dias</button>
+  </div>
+</div>
+
+@if (data(); as d) {
+  <div class="grid" [class.dim]="loading()">
+    <!-- Indicador principal -->
+    <section class="card hero">
+      <span class="eyebrow">Tempo médio · pedido enviado → na tela da cozinha</span>
+      <div class="hero-num num">{{ d.avgToKitchenSeconds | duration }}</div>
+      @if (comparison(); as c) {
+        <div class="compare" [class.good]="c.faster" [class.bad]="!c.faster">
+          {{ c.faster ? '▼' : '▲' }} {{ c.faster ? c.pct + '% mais rápido' : -c.pct + '% mais lento' }} que o processo no papel
+          <span class="muted">({{ d.baselineSeconds | duration }})</span>
+        </div>
+      } @else {
+        <div class="muted small">Sem pedidos confirmados pela cozinha no período.</div>
+      }
+      <p class="small muted explain">
+        Medido do toque em "Enviar" no celular do garçom até o pedido aparecer na tela da cozinha. A referência
+        do papel pode ser ajustada em Configurações.
+      </p>
+    </section>
+
+    <section class="kpis">
+      <div class="card kpi">
+        <span class="k-label">Pedidos</span>
+        <strong class="k-val num">{{ d.totalOrders - d.canceledOrders }}</strong>
+        <span class="small muted">{{ d.canceledOrders }} cancelados</span>
+      </div>
+      <div class="card kpi">
+        <span class="k-label">Faturamento</span>
+        <strong class="k-val num">{{ d.revenue | money }}</strong>
+        <span class="small muted">sem taxa de serviço</span>
+      </div>
+      <div class="card kpi">
+        <span class="k-label">Ticket médio por pedido</span>
+        <strong class="k-val num">{{ d.averageTicket | money }}</strong>
+      </div>
+      <div class="card kpi">
+        <span class="k-label">Pedido → entregue na mesa</span>
+        <strong class="k-val num">{{ d.avgTotalSeconds | duration }}</strong>
+        <span class="small muted">tempo médio total</span>
+      </div>
+    </section>
+
+    <!-- Etapas -->
+    <section class="card wide">
+      <h3>Tempo médio de cada etapa</h3>
+      <div class="stages">
+        @for (s of stages(); track s.key) {
+          <div class="stage" [class.main]="s.main">
+            <div class="s-label">
+              <strong>{{ s.label }}</strong>
+              <span class="small faint">{{ s.hint }}</span>
+            </div>
+            <div class="s-track">
+              <div class="s-bar" [style.width.%]="s.pct"></div>
+            </div>
+            <span class="s-val num">{{ s.value | duration }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Pedidos por hora -->
+    <section class="card">
+      <h3>Pedidos por hora</h3>
+      @if (hours().length) {
+        <div class="hours" (mouseleave)="hover.set(null)">
+          @for (h of hours(); track h.hour) {
+            <div class="h-col" (mouseenter)="hover.set(h.hour)" [attr.aria-label]="h.hour + 'h: ' + h.orders + ' pedidos'">
+              @if (hover() === h.hour) {
+                <div class="tip">{{ h.hour }}h · <strong>{{ h.orders }}</strong> {{ h.orders === 1 ? 'pedido' : 'pedidos' }}</div>
+              }
+              <div class="h-bar" [style.height.%]="h.pct" [class.on]="hover() === h.hour"></div>
+              <span class="h-lbl num">{{ h.hour }}h</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty small">Sem pedidos no período.</div>
+      }
+    </section>
+
+    <!-- Mais vendidos -->
+    <section class="card">
+      <h3>Mais pedidos</h3>
+      @if (d.topProducts.length) {
+        <div class="top">
+          @for (p of d.topProducts; track p.name; let i = $index) {
+            <div class="t-row" [title]="p.name + ': ' + p.quantity + ' un · ' + (p.revenue | money)">
+              <span class="t-name">{{ i + 1 }}. {{ p.name }}</span>
+              <div class="t-track"><div class="t-bar" [style.width.%]="(p.quantity / topMax()) * 100"></div></div>
+              <span class="t-val num">{{ p.quantity }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty small">Sem pedidos no período.</div>
+      }
+    </section>
+
+    <!-- Por dia -->
+    @if (d.daily.length > 1) {
+      <section class="card">
+        <h3>Por dia</h3>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Dia</th><th class="right">Pedidos</th><th class="right">Até a cozinha</th><th class="right">Faturamento</th></tr></thead>
+            <tbody>
+              @for (day of d.daily; track day.date) {
+                <tr>
+                  <td>{{ day.date + 'T12:00:00' | date: 'EEE dd/MM' }}</td>
+                  <td class="right num">{{ day.orders }}</td>
+                  <td class="right num">{{ day.avgToKitchenSeconds | duration }}</td>
+                  <td class="right num">{{ day.revenue | money }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- Garçons -->
+    <section class="card">
+      <h3>Atendimento por garçom</h3>
+      @if (d.waiters.length) {
+        <table class="table">
+          <thead><tr><th>Garçom</th><th class="right">Pedidos</th><th class="right">Vendido</th></tr></thead>
+          <tbody>
+            @for (w of d.waiters; track w.name) {
+              <tr><td>{{ w.name }}</td><td class="right num">{{ w.orders }}</td><td class="right num">{{ w.revenue | money }}</td></tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="empty small">Sem pedidos no período.</div>
+      }
+    </section>
+  </div>
+} @else {
+  <div class="empty card">{{ loading() ? 'Carregando…' : 'Sem dados.' }}</div>
+}

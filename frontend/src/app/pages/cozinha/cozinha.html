@@ -1,0 +1,95 @@
+<div class="kitchen">
+  <div class="k-head">
+    <div>
+      <h1>Cozinha</h1>
+      <span class="sub">
+        {{ byStatus()['Pendente'].length }} novos · {{ byStatus()['EmPreparo'].length }} em preparo ·
+        {{ byStatus()['Pronto'].length }} prontos
+      </span>
+    </div>
+    <div class="row">
+      @if (!ui.soundEnabled()) {
+        <button class="btn accent" (click)="ui.enableSound()">🔔 Ativar som de novos pedidos</button>
+      } @else {
+        <span class="sound-on">🔔 Som ativo</span>
+      }
+      <button class="btn dark hide-sm" (click)="toggleFullscreen()">⛶ Tela cheia</button>
+    </div>
+  </div>
+
+  <div class="board">
+    @for (col of columns; track col.status) {
+      <section class="col" [class]="'c-' + col.status">
+        <header>
+          <h2>{{ col.title }}</h2>
+          <span class="count">{{ byStatus()[col.status].length }}</span>
+          <span class="hint">{{ col.hint }}</span>
+        </header>
+
+        <div class="cards">
+          @for (o of byStatus()[col.status]; track o.id) {
+            <article class="ticket" [class.fresh]="fresh().has(o.id)" [class]="level(o)">
+              <div class="t-top">
+                <span class="mesa">Mesa {{ o.tableNumber }}</span>
+                <span class="timer num" [title]="o.status === 'Pronto' ? 'Tempo desde que ficou pronto' : 'Tempo desde o envio'">
+                  ⏱ {{ timer(o) }}
+                </span>
+              </div>
+              <div class="t-meta">
+                #{{ o.id }} · {{ o.waiterName }} · {{ o.createdAt | hora }} · {{ itemCount(o) }} itens
+              </div>
+
+              <ul class="t-items">
+                @for (i of o.items; track i.id) {
+                  <li>
+                    <span class="q num">{{ i.quantity }}</span>
+                    <div>
+                      <span class="name">{{ i.productName }}</span>
+                      @if (i.notes) {
+                        <span class="obs">⚠ {{ i.notes }}</span>
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+              @if (o.notes) {
+                <div class="obs general">📌 {{ o.notes }}</div>
+              }
+
+              <div class="t-actions">
+                @switch (o.status) {
+                  @case ('Pendente') {
+                    <button class="btn primary lg grow" [disabled]="busy().has(o.id)" (click)="move(o, 'EmPreparo')">
+                      Iniciar preparo
+                    </button>
+                    <button class="btn dark" [disabled]="busy().has(o.id)" (click)="move(o, 'Pronto')" title="Já está pronto">
+                      Pronto
+                    </button>
+                  }
+                  @case ('EmPreparo') {
+                    <button class="btn dark icon" [disabled]="busy().has(o.id)" (click)="move(o, 'Pendente')" title="Voltar para Novos">↩</button>
+                    <button class="btn success lg grow" [disabled]="busy().has(o.id)" (click)="move(o, 'Pronto')">
+                      ✓ Pedido pronto
+                    </button>
+                  }
+                  @case ('Pronto') {
+                    <button class="btn dark sm" [disabled]="busy().has(o.id)" (click)="move(o, 'EmPreparo')">↩ Voltar ao preparo</button>
+                    <span class="wait">Aguardando retirada</span>
+                  }
+                }
+              </div>
+            </article>
+          } @empty {
+            <div class="col-empty">
+              @if (loading()) {
+                Carregando…
+              } @else {
+                {{ col.status === 'Pendente' ? 'Nenhum pedido novo. Bora respirar 🌴' : 'Nada por aqui.' }}
+              }
+            </div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+</div>

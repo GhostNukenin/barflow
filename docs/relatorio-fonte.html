@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>BarFlow – Projeto de Extensão I – ADS</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 20mm 17mm; }
+  :root {
+    --sea-900:#08384a; --sea-700:#0b5d7a; --sea-500:#1584a8; --sea-100:#e3f2f7;
+    --sun:#f4b223; --sun-100:#fff4d9; --dende:#d9531f; --leaf:#1f7a4a; --leaf-100:#e1f4e9;
+    --ink:#1d272c; --ink-2:#4f5d64; --line:#d9e1e5; --bg-soft:#f6f8f9;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Segoe UI", system-ui, Arial, sans-serif; color: var(--ink); font-size: 10.4pt; line-height: 1.5; margin: 0; }
+  h1, h2, h3, h4 { color: var(--sea-900); line-height: 1.25; margin: 0; }
+  h1 { font-size: 19pt; margin: 0 0 4mm; padding-bottom: 2.5mm; border-bottom: 2.5px solid var(--sun); break-after: avoid; }
+  h2 { font-size: 13pt; margin: 6mm 0 2.5mm; break-after: avoid; }
+  h3 { font-size: 11pt; margin: 4mm 0 2mm; break-after: avoid; }
+  p { margin: 0 0 2.6mm; text-align: justify; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+  section.chapter { break-before: page; }
+  .muted { color: var(--ink-2); }
+  .small { font-size: 9pt; }
+  strong { color: #0f1d23; }
+
+  /* Tabelas */
+  table { width: 100%; border-collapse: collapse; margin: 1.5mm 0 4mm; font-size: 9.3pt; break-inside: auto; }
+  tr { break-inside: avoid; }
+  th { background: var(--sea-700); color: #fff; text-align: left; font-weight: 600; padding: 2mm 2.4mm; }
+  td { padding: 1.8mm 2.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:nth-child(even) td { background: var(--bg-soft); }
+  td.c, th.c { text-align: center; }
+  .ok { color: var(--leaf); font-weight: 700; }
+
+  /* Destaques */
+  .callout { border-left: 4px solid var(--sea-500); background: var(--sea-100); padding: 3mm 4mm; margin: 3mm 0 4mm; border-radius: 0 6px 6px 0; break-inside: avoid; }
+  .callout .t { display: block; font-weight: 700; font-size: 8.6pt; letter-spacing: .06em; text-transform: uppercase; color: var(--sea-700); margin-bottom: 1mm; }
+  .callout.sun { border-color: var(--sun); background: var(--sun-100); }
+  .callout.sun .t { color: #8a5a00; }
+  .callout.leaf { border-color: var(--leaf); background: var(--leaf-100); }
+  .callout.leaf .t { color: var(--leaf); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* Campos a preencher pela equipe */
+  .fill { background: #fff1a8; border: 1px dashed #c99a00; color: #6b4d00; padding: 0 1.4mm; border-radius: 3px; font-weight: 600; font-size: .94em; }
+  .fill-block { background: #fffbe0; border: 1.5px dashed #c99a00; border-radius: 6px; padding: 3mm 4mm; margin: 2mm 0 4mm; color: #6b4d00; break-inside: avoid; }
+  .fill-block b { color: #5a4000; }
+
+  /* Figuras */
+  figure { margin: 3mm 0 5mm; break-inside: avoid; text-align: center; }
+  figure img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; }
+  figcaption { font-size: 8.8pt; color: var(--ink-2); margin-top: 1.5mm; }
+  .figrow { display: flex; gap: 5mm; justify-content: center; align-items: flex-start; }
+  .figrow figure { flex: 1; }
+  .phone img { max-height: 120mm; }
+
+  /* Fluxos */
+  .flow { display: flex; align-items: stretch; gap: 0; margin: 2mm 0 2mm; flex-wrap: nowrap; break-inside: avoid; }
+  .flow .step { flex: 1; border: 1.5px solid var(--sea-500); background: #fff; border-radius: 6px; padding: 2mm; font-size: 8.4pt; text-align: center; display: flex; align-items: center; justify-content: center; min-height: 15mm; }
+  .flow .arr { width: 6mm; display: flex; align-items: center; justify-content: center; color: var(--sea-700); font-weight: 700; }
+  .flow.asis .step { border-color: #b8694a; background: #fdf1ec; }
+  .flow.asis .arr { color: #b8694a; }
+  .flow-label { font-weight: 700; font-size: 9pt; margin-top: 3mm; }
+  .pain { font-size: 8.6pt; color: #9a3d1a; }
+
+  /* Arquitetura */
+  .arch { display: grid; grid-template-columns: 1fr 17mm 1.2fr 17mm 1fr; align-items: center; margin: 3mm 0 2mm; break-inside: avoid; }
+  .arch .box { border: 1.5px solid var(--sea-700); border-radius: 8px; padding: 3mm; background: #fff; font-size: 8.8pt; }
+  .arch .box h4 { font-size: 9.6pt; margin-bottom: 1mm; }
+  .arch .box ul { padding-left: 4mm; margin: 0; }
+  .arch .link { text-align: center; font-size: 7pt; padding: 0 1mm; overflow-wrap: anywhere; color: var(--sea-700); font-weight: 600; line-height: 1.2; }
+
+  /* Capa */
+  .cover { height: 257mm; display: flex; flex-direction: column; position: relative; }
+  .cover .band { background: linear-gradient(160deg, #0e7499 0%, var(--sea-700) 50%, var(--sea-900) 100%); color: #fff; border-radius: 10px; padding: 14mm 12mm 12mm; position: relative; overflow: hidden; }
+  .cover .sunc { position: absolute; width: 46mm; height: 46mm; border-radius: 50%; background: radial-gradient(circle, #ffd76e 0%, var(--sun) 62%, transparent 63%); right: 12mm; top: 10mm; }
+  .cover .kicker { font-size: 9.5pt; letter-spacing: .14em; text-transform: uppercase; color: var(--sun); font-weight: 700; }
+  .cover h1.title { color: #fff; border: 0; font-size: 34pt; margin: 6mm 0 1mm; padding: 0; letter-spacing: -.01em; }
+  .cover .subtitle { font-size: 14pt; color: rgba(255,255,255,.92); max-width: 120mm; }
+  .cover .phases { margin-top: 10mm; font-size: 8.6pt; letter-spacing: .08em; color: rgba(255,255,255,.8); font-weight: 600; }
+  .cover .meta { margin-top: 10mm; }
+  .cover .meta table td { font-size: 10pt; padding: 2.4mm 3mm; }
+  .cover .meta table td:first-child { width: 48mm; font-weight: 700; color: var(--sea-900); }
+  .cover .foot { margin-top: auto; font-size: 9pt; color: var(--ink-2); text-align: center; }
+
+  /* Sumário */
+  .toc ol { list-style: none; padding: 0; columns: 1; }
+  .toc li { display: flex; border-bottom: 1px dotted #b9c4ca; padding: 1.4mm 0; margin: 0; font-size: 10pt; }
+  .toc li span:first-child { width: 10mm; font-weight: 700; color: var(--sea-700); }
+  .toc .d { margin-left: auto; color: var(--ink-2); font-size: 8.6pt; }
+
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; margin: 2mm 0 4mm; }
+  .kpi { border: 1px solid var(--line); border-radius: 6px; padding: 3mm; background: var(--bg-soft); }
+  .kpi b { display: block; font-size: 14pt; color: var(--sea-700); }
+  .kpi span { font-size: 8.6pt; color: var(--ink-2); }
+
+  .check li { list-style: none; margin-left: -6mm; }
+  .check .y::before { content: "☑ "; color: var(--leaf); font-weight: 700; }
+  .check .n::before { content: "☐ "; color: #9a6b00; font-weight: 700; }
+  code { font-family: Consolas, monospace; font-size: 9pt; background: var(--bg-soft); padding: 0 1mm; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ============================ CAPA ============================ -->
+<div class="cover">
+  <div class="band">
+    <div class="sunc"></div>
+    <div class="kicker">Projeto de Extensão I · Análise e Desenvolvimento de Sistemas</div>
+    <h1 class="title">BarFlow</h1>
+    <div class="subtitle">Gestão de pedidos em tempo real entre o salão e a cozinha do <b>Bahia Resenha &amp; Bar</b></div>
+    <div class="phases">DIAGNOSTICAR → PROJETAR → DESENVOLVER → TESTAR → AVALIAR → COMUNICAR</div>
+  </div>
+
+  <div class="meta">
+    <table>
+      <tr><td>Documento</td><td>Relatório técnico do projeto extensionista (estrutura do D5, consolidando D1 a D4)</td></tr>
+      <tr><td>Parceiro</td><td>Bahia Resenha &amp; Bar <span class="fill">[PREENCHER: endereço/bairro e cidade]</span></td></tr>
+      <tr><td>Público atendido</td><td>Garçons, equipe de cozinha, caixa e gestão do bar; indiretamente, os clientes</td></tr>
+      <tr><td>Equipe</td><td><span class="fill">[PREENCHER: nomes completos e matrículas]</span></td></tr>
+      <tr><td>Professor(a)</td><td><span class="fill">[PREENCHER]</span></td></tr>
+      <tr><td>Instituição / turma</td><td><span class="fill">[PREENCHER]</span></td></tr>
+      <tr><td>Período</td><td><span class="fill">[PREENCHER: semestre/ano]</span></td></tr>
+      <tr><td>Versão do MVP</td><td>BarFlow 1.0 (MVP) · documento gerado em 10/10/2026</td></tr>
+    </table>
+  </div>
+
+  <div class="callout sun" style="margin-top:8mm">
+    <span class="t">Como usar este documento</span>
+    <p>Todo o conteúdo técnico (requisitos, arquitetura, telas, testes executados) foi produzido a partir do sistema BarFlow já desenvolvido. Os trechos em <span class="fill">amarelo</span> dependem de informações que só a equipe possui (entrevistas, observações no bar, testes com os funcionários, nomes) e devem ser preenchidos antes da entrega. Conforme o guia da disciplina, nenhum resultado com usuários foi inventado.</p>
+  </div>
+
+  <div class="foot">Bahia Resenha &amp; Bar · BarFlow</div>
+</div>
+
+<!-- ============================ SUMÁRIO ============================ -->
+<section class="chapter toc">
+  <h1>Sumário</h1>
+  <ol>
+    <li><span>1</span><span>Resumo executivo</span><span class="d">D5</span></li>
+    <li><span>2</span><span>Contexto e justificativa</span><span class="d">D1</span></li>
+    <li><span>3</span><span>Objetivos</span><span class="d">D1 / D2</span></li>
+    <li><span>4</span><span>Diagnóstico sociotécnico: problema, stakeholders e processo atual</span><span class="d">D1</span></li>
+    <li><span>5</span><span>Requisitos</span><span class="d">D1 / D2</span></li>
+    <li><span>6</span><span>Projeto da solução: Canvas, teoria da mudança e MVP</span><span class="d">D2</span></li>
+    <li><span>7</span><span>Backlog, metas e cronograma</span><span class="d">D2</span></li>
+    <li><span>8</span><span>Arquitetura, tecnologias e modelo de dados</span><span class="d">D2 / D4</span></li>
+    <li><span>9</span><span>Implementação: o MVP construído</span><span class="d">D4</span></li>
+    <li><span>10</span><span>Plano de testes, indicadores e monitoramento</span><span class="d">D3</span></li>
+    <li><span>11</span><span>Testes executados e validação</span><span class="d">D4</span></li>
+    <li><span>12</span><span>Riscos, ética, LGPD, segurança e acessibilidade</span><span class="d">D3</span></li>
+    <li><span>13</span><span>Resultados e discussão</span><span class="d">D5</span></li>
+    <li><span>14</span><span>Impacto extensionista e rastreabilidade</span><span class="d">D5</span></li>
+    <li><span>15</span><span>Próximos passos</span><span class="d">D5</span></li>
+    <li><span>16</span><span>Uso de ferramentas de IA</span><span class="d">—</span></li>
+    <li><span>17</span><span>Roteiro do pitch e demonstração</span><span class="d">D6</span></li>
+    <li><span>18</span><span>Checklist final da equipe</span><span class="d">—</span></li>
+    <li><span></span><span>Referências e anexos</span><span class="d">—</span></li>
+  </ol>
+</section>
+
+<!-- ============================ 1 ============================ -->
+<section class="chapter">
+  <h1>1. Resumo executivo</h1>
+  <p>No <strong>Bahia Resenha &amp; Bar</strong>, os pedidos dos clientes são anotados pelos garçons em papel ou transmitidos verbalmente à cozinha. Esse fluxo depende de deslocamento físico até a cozinha, está sujeito a perda de comandas, erros de leitura e esquecimento de observações (como alergias ou "sem cebola"), e não deixa registro do tempo de atendimento.</p>
+  <p>O projeto desenvolveu o <strong>BarFlow</strong>, um sistema web acessado pelo navegador (celular, tablet ou computador) que conecta o garçom à cozinha em tempo real. O garçom seleciona a mesa e os produtos no celular; o pedido aparece imediatamente na tela da cozinha, que atualiza o andamento (pendente, em preparo, pronto); o garçom é avisado quando o pedido fica pronto; o caixa fecha a conta da mesa; e o gestor acompanha indicadores e histórico.</p>
+  <p>O <strong>indicador principal</strong> é o tempo entre o registro do pedido pelo garçom e sua disponibilização na cozinha, que o sistema mede automaticamente para cada pedido, permitindo a comparação com o processo anterior em papel.</p>
+
+  <div class="kpis">
+    <div class="kpi"><b>4 perfis</b><span>Garçom, Cozinha, Caixa e Gestor, com permissões distintas</span></div>
+    <div class="kpi"><b>Fluxo ponta a ponta</b><span>Pedido → cozinha → pronto → entregue → pago, com persistência em banco</span></div>
+    <div class="kpi"><b>Tempo real</b><span>SignalR (WebSocket): a cozinha recebe sem atualizar a página</span></div>
+  </div>
+
+  <h3>Situação atual do projeto</h3>
+  <table>
+    <tr><th style="width:32%">Etapa</th><th style="width:18%">Status</th><th>Observação</th></tr>
+    <tr><td>MVP funcional (D4 – desenvolvimento)</td><td class="ok">Concluído</td><td>Todas as funcionalidades previstas implementadas e testadas em ambiente de desenvolvimento.</td></tr>
+    <tr><td>Testes funcionais</td><td class="ok">Executados</td><td>Casos de teste da seção 11 executados em 10/10/2026.</td></tr>
+    <tr><td>Diagnóstico com o parceiro (D1)</td><td><span class="fill">[PREENCHER]</span></td><td><span class="fill">[PREENCHER: entrevistas/observações realizadas no bar]</span></td></tr>
+    <tr><td>Medição do processo em papel (linha de base)</td><td><span class="fill">[PREENCHER]</span></td><td>Necessária para comparar com o indicador do sistema.</td></tr>
+    <tr><td>Piloto com funcionários (validação)</td><td><span class="fill">[PREENCHER]</span></td><td>Ver plano na seção 10.</td></tr>
+  </table>
+
+  <div class="fill-block"><b>[PREENCHER APÓS O PILOTO]</b> Resultado principal em uma frase, com números. Ex.: "No piloto de X dias, com Y garçons, o tempo médio entre registrar e o pedido chegar à cozinha caiu de Z (papel) para W (sistema), e N de M usuários concluíram o registro de pedido sem ajuda."</div>
+</section>
+
+<!-- ============================ 2 ============================ -->
+<section class="chapter">
+  <h1>2. Contexto e justificativa</h1>
+  <h2>2.1 O parceiro</h2>
+  <p>O Bahia Resenha &amp; Bar é um estabelecimento de alimentação e bebidas com atendimento em mesas, cardápio de petiscos, pratos típicos baianos (acarajé, moquecas, bobó), cervejas, drinks e bebidas sem álcool. O atendimento envolve garçons no salão, equipe de cozinha, caixa e a gestão do estabelecimento.</p>
+  <div class="fill-block"><b>[PREENCHER]</b> Dados reais do parceiro: tempo de funcionamento, número de mesas, nº de garçons/cozinheiros por turno, dias e horários de maior movimento, quem é o responsável que autorizou o projeto e como foi feito o primeiro contato.</div>
+
+  <h2>2.2 Por que este problema é relevante</h2>
+  <p>Em bares e restaurantes de pequeno porte, a comunicação entre salão e cozinha é um ponto crítico: cada ida do garçom até a cozinha é tempo fora do atendimento, comandas em papel podem ser perdidas ou mal interpretadas, e sem registros a gestão não consegue identificar gargalos. Uma solução digital simples, que funcione nos celulares que a equipe já possui e no navegador, sem instalação, atende a uma necessidade concreta sem exigir investimento alto.</p>
+  <h2>2.3 Relação com a área de ADS</h2>
+  <p>O projeto aplica levantamento e priorização de requisitos, modelagem de processos (AS IS / TO BE), modelagem de dados, desenvolvimento web full stack (front-end, API, banco de dados), comunicação em tempo real, controle de acesso por perfil, testes e definição de indicadores, ou seja, o ciclo completo de Análise e Desenvolvimento de Sistemas aplicado a uma realidade local.</p>
+  <div class="callout">
+    <span class="t">Pergunta norteadora</span>
+    <p>Que problema real estamos tentando resolver? <b>A demora e os erros na transmissão de pedidos do salão para a cozinha.</b> Para quem? <b>Garçons e cozinha do Bahia Resenha &amp; Bar e, por consequência, seus clientes.</b> Com qual solução? <b>Um sistema web de pedidos em tempo real.</b> Com quais evidências diremos que houve melhoria? <b>Comparando o tempo de chegada do pedido à cozinha antes e depois, além de taxa de conclusão de tarefas e satisfação dos usuários.</b></p>
+  </div>
+</section>
+
+<!-- ============================ 3 ============================ -->
+<section class="chapter">
+  <h1>3. Objetivos</h1>
+  <h2>3.1 Objetivo geral</h2>
+  <p>Desenvolver e validar, em parceria com o Bahia Resenha &amp; Bar, um sistema web mínimo que substitua a transmissão de pedidos em papel ou verbal por um fluxo digital em tempo real entre garçons e cozinha, reduzindo o tempo de disponibilização dos pedidos e os erros de comunicação.</p>
+  <h2>3.2 Objetivos específicos</h2>
+  <ol>
+    <li>Compreender o processo atual de pedidos do bar e as dificuldades de garçons, cozinha e gestão.</li>
+    <li>Levantar e priorizar requisitos funcionais e não funcionais junto aos usuários.</li>
+    <li>Desenvolver um MVP com fluxo completo: registro do pedido, envio automático à cozinha, controle de status, fechamento de conta e histórico.</li>
+    <li>Registrar automaticamente os horários de cada etapa do pedido para medir o indicador principal.</li>
+    <li>Testar a solução funcionalmente e com usuários reais do bar.</li>
+    <li>Comparar o tempo de chegada do pedido à cozinha entre o processo anterior e o sistema.</li>
+  </ol>
+</section>
+
+<!-- ============================ 4 ============================ -->
+<section class="chapter">
+  <h1>4. Diagnóstico sociotécnico</h1>
+  <h2>4.1 Declaração do problema</h2>
+  <table>
+    <tr><th style="width:40%">Evitamos</th><th>Formulação adotada</th></tr>
+    <tr><td>"O bar precisa de um sistema."</td><td>"No Bahia Resenha &amp; Bar, os pedidos são anotados em papel ou repassados verbalmente à cozinha, o que exige deslocamento do garçom, gera risco de perda ou erro de leitura das comandas e de esquecimento de observações, e não deixa registro do tempo entre o pedido e o preparo."</td></tr>
+  </table>
+
+  <h3>Causas e consequências</h3>
+  <table>
+    <tr><th style="width:50%">Causas</th><th>Consequências</th></tr>
+    <tr><td><ul><li>Comanda em papel como único registro</li><li>Transmissão depende do garçom ir até a cozinha</li><li>Sem visão centralizada de quais pedidos estão pendentes</li><li>Observações anotadas à mão, às vezes ilegíveis</li></ul></td>
+        <td><ul><li>Atraso entre o pedido do cliente e o início do preparo</li><li>Pedidos esquecidos, trocados ou com itens errados</li><li>Garçom fora do salão por mais tempo</li><li>Gestão sem dados de tempo e volume de atendimento</li></ul></td></tr>
+  </table>
+
+  <h3>Evidências do problema</h3>
+  <div class="fill-block"><b>[PREENCHER: obrigatório para o D1]</b> Registre as evidências reais coletadas no bar, por exemplo:
+    <ul style="margin:1.5mm 0 0">
+      <li>Entrevistas: com quem (função, sem nome se preferirem), data e principais falas.</li>
+      <li>Observação: quantos pedidos acompanhados, quanto tempo levou da anotação à cozinha (cronometrado).</li>
+      <li>Ocorrências: pedidos perdidos/errados relatados em uma semana.</li>
+      <li>Fotos de comandas (somente com autorização e sem dados de clientes).</li>
+    </ul>
+  </div>
+
+  <h2>4.2 Stakeholders</h2>
+  <table>
+    <tr><th>Stakeholder</th><th>Interesse</th><th class="c">Influência</th><th class="c">Interesse</th><th>Estratégia de participação</th></tr>
+    <tr><td><b>Gestor / proprietário</b></td><td>Agilidade, menos erros, dados de desempenho</td><td class="c">Alta</td><td class="c">Alto</td><td>Gerenciar de perto: valida requisitos, aprova o piloto, define a linha de base</td></tr>
+    <tr><td><b>Garçons</b></td><td>Menos deslocamento, saber quando o pedido está pronto</td><td class="c">Média</td><td class="c">Alto</td><td>Envolver ativamente: entrevistas, testes de usabilidade no celular</td></tr>
+    <tr><td><b>Cozinha</b></td><td>Pedidos legíveis, ordem clara, observações visíveis</td><td class="c">Média</td><td class="c">Alto</td><td>Envolver ativamente: validar a tela da cozinha em horário real</td></tr>
+    <tr><td><b>Caixa</b></td><td>Conferência correta de itens e valores</td><td class="c">Baixa</td><td class="c">Médio</td><td>Manter informado e testar fechamento de conta</td></tr>
+    <tr><td><b>Clientes</b></td><td>Pedido correto e mais rápido</td><td class="c">Baixa</td><td class="c">Médio</td><td>Beneficiários indiretos; não usam o sistema</td></tr>
+    <tr><td><b>Equipe do projeto / professor</b></td><td>Entregar e validar o MVP</td><td class="c">Alta</td><td class="c">Alto</td><td>Reuniões e entregas D1–D6</td></tr>
+  </table>
+
+  <h2>4.3 Processo atual (AS IS) e processo proposto (TO BE)</h2>
+  <div class="flow-label">AS IS: processo atual em papel</div>
+  <div class="flow asis">
+    <div class="step">Cliente faz o pedido na mesa</div><div class="arr">→</div>
+    <div class="step">Garçom anota na comanda de papel</div><div class="arr">→</div>
+    <div class="step">Garçom vai até a cozinha (ou grita no balcão)</div><div class="arr">→</div>
+    <div class="step">Cozinha lê e prepara</div><div class="arr">→</div>
+    <div class="step">Garçom volta para verificar se ficou pronto</div><div class="arr">→</div>
+    <div class="step">Caixa soma as comandas</div>
+  </div>
+  <p class="pain">Pontos de dor: deslocamento, comanda perdida/ilegível, observação esquecida, garçom não sabe quando está pronto, nenhum registro de tempo.</p>
+
+  <div class="flow-label">TO BE: processo com o BarFlow</div>
+  <div class="flow">
+    <div class="step">Garçom escolhe mesa e itens no celular</div><div class="arr">→</div>
+    <div class="step">Pedido salvo e enviado automaticamente</div><div class="arr">→</div>
+    <div class="step">Aparece na tela da cozinha com aviso sonoro</div><div class="arr">→</div>
+    <div class="step">Cozinha marca "em preparo" e "pronto"</div><div class="arr">→</div>
+    <div class="step">Garçom é avisado e marca "entregue"</div><div class="arr">→</div>
+    <div class="step">Caixa vê a conta consolidada e registra pagamento</div>
+  </div>
+  <p class="small muted">Em todas as etapas o sistema grava o horário, permitindo medir o tempo de cada fase.</p>
+  <div class="fill-block"><b>[PREENCHER/VALIDAR]</b> Confirmar com o gestor e com os garçons se o AS IS acima corresponde exatamente a como o bar trabalha hoje (ex.: existe impressora? o caixa usa algum sistema? como as bebidas são servidas?). Ajustar o fluxo conforme a realidade observada.</div>
+</section>
+
+<!-- ============================ 5 ============================ -->
+<section class="chapter">
+  <h1>5. Requisitos</h1>
+  <h2>5.1 Requisitos funcionais (implementados no MVP)</h2>
+  <table>
+    <tr><th style="width:11%">ID</th><th>Requisito</th><th style="width:16%">Perfil</th><th style="width:12%" class="c">Prioridade</th></tr>
+    <tr><td>RF01</td><td>O sistema deve autenticar usuários por login e senha e direcionar cada um à tela do seu perfil.</td><td>Todos</td><td class="c">Alta</td></tr>
+    <tr><td>RF02</td><td>O gestor deve cadastrar, editar e desativar produtos com nome, descrição, preço e categoria.</td><td>Gestor</td><td class="c">Alta</td></tr>
+    <tr><td>RF03</td><td>O gestor deve cadastrar e ordenar categorias (ex.: petiscos, pratos, bebidas).</td><td>Gestor</td><td class="c">Média</td></tr>
+    <tr><td>RF04</td><td>O garçom deve registrar um pedido informando mesa, itens, quantidades e observações (por item e geral).</td><td>Garçom</td><td class="c">Alta</td></tr>
+    <tr><td>RF05</td><td>O pedido registrado deve ser disponibilizado automaticamente na tela da cozinha, sem recarregar a página.</td><td>Cozinha</td><td class="c">Alta</td></tr>
+    <tr><td>RF06</td><td>A cozinha deve visualizar pedidos pendentes, em preparo e prontos, com itens, observações e tempo decorrido.</td><td>Cozinha</td><td class="c">Alta</td></tr>
+    <tr><td>RF07</td><td>A cozinha deve alterar o status do pedido (pendente → em preparo → pronto) e desfazer a ação.</td><td>Cozinha</td><td class="c">Alta</td></tr>
+    <tr><td>RF08</td><td>O garçom deve acompanhar o status dos seus pedidos e ser avisado quando ficarem prontos.</td><td>Garçom</td><td class="c">Alta</td></tr>
+    <tr><td>RF09</td><td>O garçom deve marcar o pedido como entregue e cancelar pedidos próprios ainda pendentes.</td><td>Garçom</td><td class="c">Média</td></tr>
+    <tr><td>RF10</td><td>O sistema deve registrar os horários de criação, chegada à cozinha, início do preparo, pronto e entrega.</td><td>Sistema</td><td class="c">Alta</td></tr>
+    <tr><td>RF11</td><td>O caixa deve consultar as mesas com conta aberta, conferir itens e valores e registrar o pagamento (com taxa de serviço opcional).</td><td>Caixa</td><td class="c">Média</td></tr>
+    <tr><td>RF12</td><td>O gestor deve consultar o histórico de pedidos com filtros por período, status e mesa.</td><td>Gestor</td><td class="c">Média</td></tr>
+    <tr><td>RF13</td><td>O gestor deve visualizar indicadores, em especial o tempo médio entre registrar o pedido e disponibilizá-lo na cozinha.</td><td>Gestor</td><td class="c">Alta</td></tr>
+    <tr><td>RF14</td><td>O gestor deve gerenciar usuários e perfis e configurar nº de mesas, taxa de serviço e tempo de referência do processo anterior.</td><td>Gestor</td><td class="c">Média</td></tr>
+  </table>
+
+  <h2>5.2 Requisitos não funcionais</h2>
+  <table>
+    <tr><th style="width:11%">ID</th><th>Requisito</th><th style="width:34%">Como foi atendido</th></tr>
+    <tr><td>RNF01</td><td>Interface responsiva para celular, tablet e computador.</td><td>Layout adaptável; tela do garçom pensada para celular (testada em 390 px de largura).</td></tr>
+    <tr><td>RNF02</td><td>Acesso pelo navegador, sem instalação de aplicativo.</td><td>Aplicação web servida pela própria API na rede local.</td></tr>
+    <tr><td>RNF03</td><td>Atualização em tempo real entre garçom e cozinha.</td><td>ASP.NET Core SignalR (WebSocket) com reconexão automática.</td></tr>
+    <tr><td>RNF04</td><td>Exigir autenticação e respeitar permissões por perfil.</td><td>Token JWT; autorização por perfil no servidor (não só na tela).</td></tr>
+    <tr><td>RNF05</td><td>Senhas armazenadas de forma segura.</td><td>Hash BCrypt; senhas nunca são gravadas em texto.</td></tr>
+    <tr><td>RNF06</td><td>Preservar o histórico mesmo com mudanças no cardápio.</td><td>Nome e preço do produto copiados no item do pedido; produtos com histórico são desativados, não apagados.</td></tr>
+    <tr><td>RNF07</td><td>Usabilidade em ambiente movimentado.</td><td>Botões grandes, tela da cozinha escura e de alto contraste, alertas sonoros e por vibração.</td></tr>
+    <tr><td>RNF08</td><td>Tolerância a oscilação de Wi-Fi.</td><td>Indicador "Ao vivo/Offline" e recarga automática do estado após reconectar.</td></tr>
+  </table>
+  <div class="fill-block"><b>[PREENCHER]</b> Indicar quais requisitos foram confirmados diretamente com o gestor/funcionários e em que data (rastreabilidade com o D1).</div>
+</section>
+
+<!-- ============================ 6 ============================ -->
+<section class="chapter">
+  <h1>6. Projeto da solução</h1>
+  <h2>6.1 Canvas da solução</h2>
+  <table>
+    <tr><th style="width:26%">Elemento</th><th>Resposta</th></tr>
+    <tr><td><b>Problema</b></td><td>Pedidos transmitidos em papel ou verbalmente, com demora, erros e sem registro de tempos.</td></tr>
+    <tr><td><b>Beneficiários / usuários</b></td><td>Garçons, cozinha, caixa e gestor (usuários); clientes do bar (beneficiários indiretos).</td></tr>
+    <tr><td><b>Objetivo geral</b></td><td>Reduzir o tempo e os erros entre o pedido na mesa e sua chegada à cozinha.</td></tr>
+    <tr><td><b>Solução proposta</b></td><td>Sistema web BarFlow com pedidos em tempo real, controle de status, caixa, histórico e indicadores.</td></tr>
+    <tr><td><b>Funcionalidades principais</b></td><td>Registro de pedido no celular; tela da cozinha; status e avisos; fechamento de conta; indicadores.</td></tr>
+    <tr><td><b>Resultados esperados</b></td><td>Pedidos chegam à cozinha em segundos; menos idas à cozinha; menos pedidos errados; dados para gestão.</td></tr>
+    <tr><td><b>Indicadores</b></td><td>Tempo registro → cozinha (principal); conclusão de tarefas; erros; satisfação (1–5).</td></tr>
+    <tr><td><b>Parcerias / governança</b></td><td>Gestor do bar valida requisitos e decisões; equipe do projeto desenvolve e conduz testes.</td></tr>
+    <tr><td><b>Riscos</b></td><td>Wi-Fi instável; resistência à mudança; disponibilidade da equipe do bar no horário de pico.</td></tr>
+    <tr><td><b>Recursos</b></td><td>Computador do bar (servidor), roteador Wi-Fi existente, celulares dos garçons, 1 tela/tablet na cozinha; software livre ou gratuito.</td></tr>
+  </table>
+
+  <h2>6.2 Teoria da mudança</h2>
+  <table>
+    <tr><th style="width:18%">Nível</th><th>Aplicação no projeto</th></tr>
+    <tr><td><b>Insumos</b></td><td>Equipe, notebooks, parceiro, Angular, ASP.NET Core, PostgreSQL, Docker, rede Wi-Fi do bar.</td></tr>
+    <tr><td><b>Atividades</b></td><td>Diagnóstico, requisitos, desenvolvimento, testes funcionais, piloto com os funcionários.</td></tr>
+    <tr><td><b>Produto</b></td><td>MVP do BarFlow funcionando na rede do bar.</td></tr>
+    <tr><td><b>Resultado</b></td><td>Pedidos disponíveis na cozinha mais rápido, menos erros e deslocamentos, registro dos tempos.</td></tr>
+    <tr><td><b>Impacto</b></td><td>Atendimento mais ágil e organizado e decisões de gestão baseadas em dados.</td></tr>
+  </table>
+
+  <h2>6.3 Definição do MVP</h2>
+  <div class="callout leaf">
+    <span class="t">Fluxo de ponta a ponta do MVP</span>
+    <p>Garçom registra o pedido → a regra de negócio valida mesa, produtos ativos e quantidades → o pedido é persistido no PostgreSQL → a cozinha recebe em tempo real e atualiza o status → o garçom consulta e entrega → o caixa fecha a conta → o gestor consulta histórico e indicadores.</p>
+  </div>
+  <table>
+    <tr><th style="width:50%">Dentro do MVP</th><th>Fora do escopo deste semestre</th></tr>
+    <tr><td><ul>
+      <li>Login com 4 perfis e permissões</li><li>Cadastro de produtos e categorias</li><li>Registro de pedidos com observações</li>
+      <li>Tela da cozinha em tempo real</li><li>Status: pendente, em preparo, pronto, entregue, cancelado</li>
+      <li>Registro de horários de cada etapa</li><li>Fechamento de conta e pagamento</li><li>Histórico e indicadores</li></ul></td>
+      <td><ul>
+      <li>Impressão de comanda</li><li>Separação bar × cozinha por setor</li><li>Pagamento integrado (maquininha/Pix automático)</li>
+      <li>Controle de estoque</li><li>Pedido feito pelo próprio cliente (QR code)</li><li>Vários estabelecimentos (multi-bar)</li><li>Aplicativo instalável (PWA)</li></ul></td></tr>
+  </table>
+  <p><b>Funcionalidades críticas:</b> RF04, RF05, RF06, RF07 e RF10, que sustentam o indicador principal. <b>Dependências:</b> rede Wi-Fi do bar e um computador ligado durante o expediente.</p>
+</section>
+
+<!-- ============================ 7 ============================ -->
+<section class="chapter">
+  <h1>7. Backlog, metas e cronograma</h1>
+  <h2>7.1 Backlog priorizado (histórias de usuário)</h2>
+  <table>
+    <tr><th style="width:8%">ID</th><th>História de usuário</th><th style="width:10%" class="c">Prior.</th><th style="width:30%">Critério de aceitação</th><th style="width:10%" class="c">Status</th></tr>
+    <tr><td>US01</td><td>Como garçom, quero escolher a mesa e os produtos no celular para não precisar anotar em papel.</td><td class="c">Alta</td><td>Pedido salvo com mesa, itens, quantidades e total corretos.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US02</td><td>Como cozinheiro, quero ver os pedidos novos assim que forem feitos, para começar o preparo sem esperar o garçom.</td><td class="c">Alta</td><td>Pedido aparece na tela da cozinha sem recarregar, com aviso sonoro.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US03</td><td>Como cozinheiro, quero marcar o pedido como em preparo e pronto.</td><td class="c">Alta</td><td>Status muda e todos os perfis veem a mudança em tempo real.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US04</td><td>Como garçom, quero ser avisado quando meu pedido ficar pronto.</td><td class="c">Alta</td><td>Aviso visual, sonoro e vibração; destaque na lista de pedidos.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US05</td><td>Como garçom, quero registrar observações por item (ex.: "sem pimenta").</td><td class="c">Alta</td><td>Observação destacada no cartão da cozinha.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US06</td><td>Como gestor, quero saber o tempo médio entre o registro e a chegada do pedido à cozinha.</td><td class="c">Alta</td><td>Indicador calculado por período e comparado à referência do papel.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US07</td><td>Como gestor, quero cadastrar produtos e preços.</td><td class="c">Alta</td><td>Produto criado/alterado aparece no celular do garçom.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US08</td><td>Como caixa, quero ver a conta consolidada da mesa e registrar o pagamento.</td><td class="c">Média</td><td>Itens somados, taxa opcional, mesa liberada após pagamento.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US09</td><td>Como gestor, quero consultar pedidos anteriores.</td><td class="c">Média</td><td>Filtros por data, status e mesa retornam os registros corretos.</td><td class="c ok">Feito</td></tr>
+    <tr><td>US10</td><td>Como gestor, quero cadastrar funcionários com perfis diferentes.</td><td class="c">Média</td><td>Cada perfil acessa somente suas telas e ações.</td><td class="c ok">Feito</td></tr>
+  </table>
+
+  <h2>7.2 Metas SMART</h2>
+  <ul>
+    <li><b>M1:</b> Até a semana <span class="fill">[nº]</span>, colocar o MVP em piloto no bar com pelo menos <span class="fill">[nº]</span> garçons e 1 tela na cozinha, por <span class="fill">[nº]</span> dias de funcionamento.</li>
+    <li><b>M2:</b> No piloto, obter tempo médio entre registro e chegada à cozinha <b>inferior a 30 segundos</b> e menor que a linha de base medida no processo em papel.</li>
+    <li><b>M3:</b> No teste de usabilidade, alcançar <b>≥ 80%</b> de conclusão da tarefa "registrar pedido" sem ajuda e satisfação média <b>≥ 4,0/5</b>.</li>
+    <li><b>M4:</b> Zero erros críticos (que impeçam concluir o fluxo) na versão usada no piloto final.</li>
+  </ul>
+
+  <h2>7.3 Cronograma</h2>
+  <table>
+    <tr><th style="width:20%">Período</th><th>Foco</th><th style="width:20%">Entrega</th><th style="width:16%" class="c">Situação</th></tr>
+    <tr><td>Semanas 1–2</td><td>Diagnóstico no bar, stakeholders, requisitos iniciais</td><td>D1</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Semanas 2–3</td><td>Canvas, escopo do MVP, backlog, metas</td><td>D2</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Semanas 3–4</td><td>Plano de testes, indicadores, riscos</td><td>D3</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Semanas 5–7</td><td>Desenvolvimento do MVP</td><td>D4</td><td class="c ok">MVP pronto</td></tr>
+    <tr><td>Semanas 6–8</td><td>Piloto no bar, coleta de dados, testes com usuários</td><td>Validação</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Semanas 8–9</td><td>Consolidação técnica e resultados</td><td>D5</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Semana 9</td><td>Pitch e demonstração</td><td>D6</td><td class="c"><span class="fill">[ ]</span></td></tr>
+  </table>
+  <h2>7.4 Recursos e custos</h2>
+  <p>O projeto usa apenas software gratuito ou de código aberto (Angular, .NET, PostgreSQL, Docker Desktop para uso pessoal/educacional) e equipamentos já existentes no bar: um computador como servidor local, o roteador Wi-Fi e os celulares dos garçons. Custo adicional opcional: um tablet ou monitor para a cozinha. <span class="fill">[PREENCHER: custo estimado, se houver]</span></p>
+</section>
+
+<!-- ============================ 8 ============================ -->
+<section class="chapter">
+  <h1>8. Arquitetura, tecnologias e modelo de dados</h1>
+  <h2>8.1 Visão geral da arquitetura</h2>
+  <div class="arch">
+    <div class="box">
+      <h4>Front-end · Angular 22</h4>
+      <ul><li>Telas por perfil (garçom, cozinha, caixa, gestor)</li><li>Celular, tablet e PC via navegador</li><li>Cliente SignalR</li></ul>
+    </div>
+    <div class="link">REST<br>JSON+JWT<br>⇄<br>SignalR<br>(WebSocket)</div>
+    <div class="box">
+      <h4>Back-end · ASP.NET Core 10</h4>
+      <ul><li>API REST (controllers)</li><li>Regras de negócio e transições de status</li><li>Autenticação JWT e autorização por perfil</li><li>Hub SignalR <code>/hubs/orders</code></li><li>Serve o front-end compilado</li></ul>
+    </div>
+    <div class="link">EF Core<br>⇄<br>SQL</div>
+    <div class="box">
+      <h4>Banco · PostgreSQL 17</h4>
+      <ul><li>Usuários, cardápio, pedidos, pagamentos</li><li>Horários de cada etapa</li><li>Executa em Docker</li></ul>
+    </div>
+  </div>
+  <p style="text-align:left">Toda a solução roda em um único computador do bar, dentro da rede local: os aparelhos acessam <code>http://IP-DO-COMPUTADOR:5204</code>. Quando o garçom envia um pedido, a API grava no banco e publica o evento <code>OrderCreated</code> no hub SignalR; a tela da cozinha recebe o evento, exibe o pedido e responde com <code>AcknowledgeOrders</code>, momento em que o servidor grava <code>KitchenReceivedAt</code>, que é a base do indicador principal.</p>
+
+  <h2>8.2 Tecnologias e justificativa</h2>
+  <table>
+    <tr><th style="width:24%">Tecnologia</th><th>Justificativa</th></tr>
+    <tr><td>Angular 22</td><td>Framework web completo, componentes e roteamento por perfil; sugerido na proposta do projeto.</td></tr>
+    <tr><td>ASP.NET Core 10 (C#)</td><td>API robusta, validação, autenticação/autorização integradas e SignalR nativo para tempo real.</td></tr>
+    <tr><td>SignalR</td><td>Envia pedidos à cozinha sem atualizar a página e reconecta sozinho em caso de queda de Wi-Fi.</td></tr>
+    <tr><td>PostgreSQL 17</td><td>Banco relacional gratuito e confiável; adequado a pedidos, itens e relatórios por período.</td></tr>
+    <tr><td>Entity Framework Core</td><td>Mapeamento objeto-relacional e migrations versionadas do esquema do banco.</td></tr>
+    <tr><td>JWT + BCrypt</td><td>Sessão sem estado com perfis; senhas protegidas por hash.</td></tr>
+    <tr><td>Docker</td><td>Sobe o banco com um comando, igual em qualquer máquina da equipe.</td></tr>
+  </table>
+
+  <h2>8.3 Modelo de dados</h2>
+  <table>
+    <tr><th style="width:18%">Entidade</th><th>Principais atributos</th><th style="width:28%">Relacionamentos</th></tr>
+    <tr><td><b>User</b></td><td>Id, Name, Username (único), PasswordHash, Role (Garcom/Cozinha/Caixa/Gestor), Active</td><td>1–N Order (garçom), 1–N Payment (caixa)</td></tr>
+    <tr><td><b>Category</b></td><td>Id, Name (único), SortOrder</td><td>1–N Product</td></tr>
+    <tr><td><b>Product</b></td><td>Id, Name, Description, Price, Active</td><td>N–1 Category</td></tr>
+    <tr><td><b>Order</b></td><td>Id, TableNumber, Status, Notes, <b>StartedAt, CreatedAt, KitchenReceivedAt, PreparationStartedAt, ReadyAt, DeliveredAt, CanceledAt</b></td><td>N–1 User; 1–N OrderItem; N–1 Payment</td></tr>
+    <tr><td><b>OrderItem</b></td><td>Id, ProductName e UnitPrice (cópia histórica), CategoryName, Quantity, Notes</td><td>N–1 Order; N–1 Product</td></tr>
+    <tr><td><b>Payment</b></td><td>Id, TableNumber, Amount, ServiceFee, Method (Dinheiro/Pix/Débito/Crédito), CreatedAt</td><td>N–1 User (caixa); 1–N Order</td></tr>
+    <tr><td><b>BarSettings</b></td><td>BarName, TableCount, ServiceFeePercent, BaselineSeconds (referência do papel)</td><td>Registro único</td></tr>
+  </table>
+
+  <h2>8.4 Regras de negócio relevantes</h2>
+  <ul>
+    <li>Só produtos ativos podem ser pedidos; a mesa deve existir (1 até o nº de mesas configurado).</li>
+    <li>Transições de status por perfil: <b>cozinha</b> move pendente → em preparo → pronto (e pode desfazer); <b>garçom</b> marca pronto → entregue e cancela apenas pedidos próprios ainda pendentes; <b>gestor</b> pode cancelar qualquer pedido não pago.</li>
+    <li>Pedido pago não pode mais ser alterado.</li>
+    <li>Ao fechar a conta, todos os pedidos abertos da mesa são vinculados ao pagamento.</li>
+    <li>Produto que já tem pedidos no histórico é desativado em vez de excluído.</li>
+  </ul>
+
+  <h2>8.5 Versionamento e organização do código</h2>
+  <p>Código organizado em <code>backend/BarFlow.Api</code> (Controllers, Domain, Data/Migrations, Hubs, Auth) e <code>frontend/src/app</code> (core, layout, pages). O esquema do banco é versionado por migrations do EF Core.</p>
+  <div class="fill-block"><b>[PREENCHER]</b> Link do repositório Git (GitHub/GitLab), estratégia de branches e prints do histórico de commits, que são evidências exigidas no D4.</div>
+</section>
+
+<!-- ============================ 9 ============================ -->
+<section class="chapter">
+  <h1>9. Implementação: o MVP construído</h1>
+  <p>As telas abaixo foram capturadas do sistema em funcionamento, com <b>dados de demonstração</b> (pedidos criados apenas para ilustrar, sem clientes reais).</p>
+
+  <figure>
+    <img src="img/01-login.png" style="max-height:88mm">
+    <figcaption>Figura 1: Tela de login. Cada usuário é direcionado à tela do seu perfil.</figcaption>
+  </figure>
+
+  <div class="figrow">
+    <figure class="phone"><img src="img/02-garcom-mesas.png"><figcaption>Figura 2: Garçom escolhe a mesa (em amarelo, mesas com pedido em andamento).</figcaption></figure>
+    <figure class="phone"><img src="img/03-garcom-cardapio.png"><figcaption>Figura 3: Cardápio por categoria, busca e quantidade com "+/−".</figcaption></figure>
+    <figure class="phone"><img src="img/04-garcom-carrinho.png"><figcaption>Figura 4: Revisão do pedido, observações e envio para a cozinha.</figcaption></figure>
+  </div>
+
+  <div class="figrow" style="margin-top:2mm">
+    <figure class="phone" style="flex:0 0 33%"><img src="img/05-garcom-pedidos.png"><figcaption>Figura 5: Acompanhamento. O pedido pronto fica em destaque, com o botão "entreguei".</figcaption></figure>
+    <div style="flex:1; text-align:left; padding-top:6mm">
+      <h3 style="margin-top:0">Tela do garçom (celular)</h3>
+      <ul>
+        <li>Seleção de mesa em grade com botões grandes.</li>
+        <li>Produtos agrupados por categoria e busca sem acentos.</li>
+        <li>Observação por item e observação geral.</li>
+        <li>Barra fixa "Revisar e enviar" com total.</li>
+        <li>Aba "Pedidos" com contador de prontos, aviso sonoro e vibração.</li>
+        <li>O horário em que o garçom começou a montar o pedido também é registrado (<code>StartedAt</code>).</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure>
+    <img src="img/06-cozinha.png">
+    <figcaption>Figura 6: Tela da cozinha. Colunas Novos, Em preparo e Prontos, cronômetro por pedido, observações destacadas e alerta sonoro. O cronômetro muda de cor aos 10 e 20 minutos.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="img/07-caixa.png" style="max-height:120mm">
+    <figcaption>Figura 7: Caixa. Mesas com conta aberta, itens consolidados, taxa de serviço opcional e forma de pagamento.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="img/08-indicadores.png" style="max-height:170mm">
+    <figcaption>Figura 8: Indicadores do gestor. Tempo médio até a cozinha comparado à referência do papel, tempo por etapa, pedidos por hora, mais vendidos e atendimento por garçom. Valores de ambiente de teste, não de piloto.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="img/09-cardapio.png" style="max-height:110mm">
+    <figcaption>Figura 9: Cadastro do cardápio (produtos, preços, categorias e disponibilidade).</figcaption>
+  </figure>
+
+  <figure>
+    <img src="img/10-historico.png" style="max-height:120mm">
+    <figcaption>Figura 10: Histórico com filtros e linha do tempo de cada pedido (horário de cada etapa).</figcaption>
+  </figure>
+
+  <h2>9.1 Mudanças e dificuldades durante a implementação</h2>
+  <ul>
+    <li><b>Definição precisa do indicador:</b> para medir "disponibilização na cozinha" de forma fiel, o horário não é gravado quando o servidor recebe o pedido, e sim quando uma tela da cozinha confirma que exibiu o pedido (confirmação via SignalR).</li>
+    <li><b>Acesso pelo celular na rede local:</b> o endereço exibido para acesso inicialmente era de uma interface de rede virtual (WSL); o script de inicialização foi corrigido para mostrar o IP da rede Wi-Fi.</li>
+    <li><b>Layout no celular:</b> ao adicionar itens, o carrinho ultrapassava a largura da tela em celulares; a grade de produtos foi corrigida para respeitar a largura do aparelho.</li>
+    <li><b>Áudio no navegador:</b> navegadores só liberam som após um toque do usuário; foi incluído o botão "Ativar som".</li>
+  </ul>
+  <div class="fill-block"><b>[PREENCHER]</b> Diário de bordo da equipe (data, sprint, atividade, responsável, evidência, ajuste), conforme modelo do guia (seção 8.3).</div>
+</section>
+
+<!-- ============================ 10 ============================ -->
+<section class="chapter">
+  <h1>10. Plano de testes, indicadores e monitoramento</h1>
+  <h2>10.1 Indicador principal</h2>
+  <div class="callout">
+    <span class="t">Tempo entre o registro do pedido e sua disponibilização na cozinha</span>
+    <p><b>Fórmula:</b> média de (<code>KitchenReceivedAt</code> − <code>CreatedAt</code>) dos pedidos não cancelados do período.<br>
+    <b>CreatedAt</b> = momento em que o garçom toca em "Enviar" e o servidor registra o pedido.<br>
+    <b>KitchenReceivedAt</b> = momento em que a tela da cozinha confirma que o pedido apareceu.<br>
+    <b>Linha de base:</b> tempo médio cronometrado no processo em papel (da anotação na mesa até a comanda chegar à cozinha), cadastrado em Gestão → Configurações.</p>
+  </div>
+
+  <h2>10.2 Plano de monitoramento</h2>
+  <table>
+    <tr><th>Indicador</th><th>Fórmula / unidade</th><th>Meta</th><th>Fonte</th><th>Periodicidade</th><th>Responsável</th></tr>
+    <tr><td>Tempo registro → cozinha</td><td>Média (s)</td><td>&lt; 30 s e &lt; linha de base</td><td>Sistema (Indicadores)</td><td>Diária no piloto</td><td><span class="fill">[nome]</span></td></tr>
+    <tr><td>Linha de base (papel)</td><td>Média cronometrada (s)</td><td>Medir ≥ <span class="fill">[nº]</span> pedidos</td><td>Observação + cronômetro</td><td>Antes do piloto</td><td><span class="fill">[nome]</span></td></tr>
+    <tr><td>Tempo de preparo</td><td>Média ReadyAt − PreparationStartedAt</td><td>Acompanhar</td><td>Sistema</td><td>Semanal</td><td><span class="fill">[nome]</span></td></tr>
+    <tr><td>Conclusão de tarefa</td><td>% usuários que concluem sem ajuda</td><td>≥ 80%</td><td>Teste de usabilidade</td><td>Fim do piloto</td><td><span class="fill">[nome]</span></td></tr>
+    <tr><td>Erros críticos</td><td>Nº de falhas que impedem concluir</td><td>0</td><td>Registro de testes</td><td>A cada teste</td><td><span class="fill">[nome]</span></td></tr>
+    <tr><td>Satisfação</td><td>Média escala 1–5</td><td>≥ 4,0</td><td>Questionário</td><td>Fim do piloto</td><td><span class="fill">[nome]</span></td></tr>
+    <tr><td>Pedidos com erro</td><td>Nº de pedidos trocados/esquecidos</td><td>Menor que antes</td><td>Relato da cozinha/gestor</td><td>Semanal</td><td><span class="fill">[nome]</span></td></tr>
+  </table>
+
+  <h2>10.3 Roteiro do teste de usabilidade</h2>
+  <table>
+    <tr><th style="width:10%">Tarefa</th><th>Descrição</th><th style="width:16%">Perfil</th><th style="width:30%">Registrar</th></tr>
+    <tr><td>T1</td><td>Entrar no sistema e registrar um pedido de 2 itens para a mesa 5, com uma observação.</td><td>Garçom</td><td>Concluiu? Tempo, erros, pedidos de ajuda</td></tr>
+    <tr><td>T2</td><td>Receber o pedido, iniciar o preparo e marcar como pronto.</td><td>Cozinha</td><td>Percebeu o aviso? Concluiu?</td></tr>
+    <tr><td>T3</td><td>Identificar que o pedido está pronto e marcar como entregue.</td><td>Garçom</td><td>Percebeu o aviso? Tempo</td></tr>
+    <tr><td>T4</td><td>Fechar a conta da mesa 5 no Pix com taxa de serviço.</td><td>Caixa</td><td>Valor conferido corretamente?</td></tr>
+    <tr><td>T5</td><td>Consultar o tempo médio até a cozinha de hoje.</td><td>Gestor</td><td>Encontrou e interpretou?</td></tr>
+  </table>
+  <p class="small muted">Ao final, aplicar questionário breve (escala 1–5): facilidade de uso, clareza dos avisos, utilidade para o trabalho, e uma pergunta aberta "o que mudaria?". Coletar consentimento antes de registrar falas ou imagens.</p>
+</section>
+
+<!-- ============================ 11 ============================ -->
+<section class="chapter">
+  <h1>11. Testes executados e validação</h1>
+  <h2>11.1 Testes funcionais (executados em 10/10/2026, ambiente de desenvolvimento)</h2>
+  <p>Os casos abaixo foram executados com o sistema completo em funcionamento (API, banco PostgreSQL e front-end), usando duas sessões de navegador simultâneas para simular garçom e cozinha em aparelhos diferentes.</p>
+  <table>
+    <tr><th style="width:11%">Caso</th><th>Pré-condição / ação</th><th style="width:30%">Resultado esperado</th><th style="width:12%" class="c">Resultado</th></tr>
+    <tr><td>CT01 Login</td><td>Usuário "garcom" informa credenciais válidas.</td><td>Acesso concedido e redirecionado à tela do garçom.</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT02 Login inválido</td><td>Senha incorreta.</td><td>Mensagem "Usuário ou senha inválidos", sem acesso.</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT03 Registrar pedido</td><td>Garçom escolhe mesa, adiciona 2 acarajés e 1 cerveja, inclui observação e envia.</td><td>Pedido salvo com itens, quantidades, observação e total (R$ 50,00) corretos.</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT04 Tempo real</td><td>Tela da cozinha aberta em outra sessão no momento do envio.</td><td>Pedido aparece na cozinha sem recarregar a página.</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT05 Status</td><td>Cozinha clica "Iniciar preparo" e depois "Pedido pronto".</td><td>Status atualizado; garçom vê "Pronto" com destaque e contador.</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT06 Entrega</td><td>Garçom marca "entreguei".</td><td>Status "Entregue" e horário gravado.</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT07 Pagamento</td><td>Caixa fecha a conta da mesa no Pix com taxa de 10%.</td><td>Total R$ 55,00 (50 + 5); mesa sai da lista; pagamento listado no dia.</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT08 Permissão</td><td>Usuário "garcom" tenta acessar a rota de usuários do gestor pela API.</td><td>Acesso negado (HTTP 403).</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT09 Histórico</td><td>Gestor filtra pedidos do período.</td><td>Pedido listado com linha do tempo completa.</td><td class="c ok">Aprovado</td></tr>
+    <tr><td>CT10 Celular</td><td>Tela do garçom em largura de celular (390 px) com itens no carrinho.</td><td>Nenhum elemento ultrapassa a largura da tela.</td><td class="c ok">Aprovado após correção</td></tr>
+  </table>
+  <div class="callout sun">
+    <span class="t">Medição técnica, não resultado de piloto</span>
+    <p>No CT04, o intervalo gravado entre o envio pelo garçom e a confirmação da tela da cozinha foi de <b>0,27 segundo</b>, em rede local e com um único pedido. Esse número comprova que a medição funciona e indica o potencial da solução, mas <b>não substitui</b> a medição em uso real no bar, que deve ser registrada na seção 13.</p>
+  </div>
+
+  <h2>11.2 Validação com usuários</h2>
+  <div class="fill-block"><b>[PREENCHER APÓS O PILOTO: obrigatório para D4/D5]</b>
+    <ul style="margin:1.5mm 0 0">
+      <li>Datas e duração do piloto; quantos garçons, cozinheiros e caixas participaram.</li>
+      <li>Tabela com resultados das tarefas T1–T5 (concluiu/tempo/erros/ajuda) por participante, sem nomes.</li>
+      <li>Média de satisfação e principais comentários.</li>
+      <li>Problemas encontrados e correções feitas.</li>
+      <li>Registro das reuniões de validação com o gestor.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ 12 ============================ -->
+<section class="chapter">
+  <h1>12. Riscos, ética, LGPD, segurança e acessibilidade</h1>
+  <h2>12.1 Matriz de riscos</h2>
+  <table>
+    <tr><th>Risco</th><th class="c">Prob.</th><th class="c">Impacto</th><th>Mitigação / contingência</th></tr>
+    <tr><td>Queda ou instabilidade do Wi-Fi</td><td class="c">Média</td><td class="c">Alto</td><td>Reconexão automática, indicador "Ao vivo/Offline", pedidos ficam salvos no servidor; manter comanda de papel como contingência no piloto.</td></tr>
+    <tr><td>Computador servidor desligado</td><td class="c">Média</td><td class="c">Alto</td><td>Script de inicialização único (<code>iniciar.ps1</code>); orientar a equipe a ligá-lo na abertura.</td></tr>
+    <tr><td>Resistência dos funcionários à mudança</td><td class="c">Média</td><td class="c">Médio</td><td>Envolver garçons nos testes, treinamento curto, interface simples.</td></tr>
+    <tr><td>Indisponibilidade do parceiro para testes</td><td class="c">Média</td><td class="c">Alto</td><td>Agendar fora do horário de pico; ter mais de um contato.</td></tr>
+    <tr><td>Perda de dados</td><td class="c">Baixa</td><td class="c">Alto</td><td>Banco em volume persistente do Docker; backup periódico com <code>pg_dump</code>.</td></tr>
+    <tr><td>Acesso indevido</td><td class="c">Baixa</td><td class="c">Alto</td><td>Login obrigatório, perfis, troca das senhas padrão e da chave JWT antes do uso real.</td></tr>
+    <tr><td>Atraso no desenvolvimento</td><td class="c">Baixa</td><td class="c">Alto</td><td>MVP já concluído; novas funções só após o piloto.</td></tr>
+  </table>
+
+  <h2>12.2 LGPD e privacidade</h2>
+  <ul>
+    <li><b>Minimização:</b> o sistema não coleta nenhum dado pessoal de clientes; o pedido é identificado apenas pelo número da mesa.</li>
+    <li>Dados de funcionários limitados a nome, login e perfil, necessários ao controle de acesso.</li>
+    <li>Senhas armazenadas apenas como hash (BCrypt).</li>
+    <li>Dados ficam no computador do próprio bar (rede local); não há envio a serviços externos.</li>
+    <li>Evidências do projeto (prints, depoimentos) devem ser anonimizadas e coletadas com autorização. <span class="fill">[PREENCHER: termo de consentimento utilizado]</span></li>
+  </ul>
+  <h2>12.3 Segurança</h2>
+  <ul>
+    <li>Autenticação por token JWT com expiração; autorização verificada no servidor em cada operação.</li>
+    <li>Validação de dados de entrada (mesa válida, produtos ativos, quantidades de 1 a 99).</li>
+    <li>Antes do uso real: trocar senhas padrão, trocar a chave de assinatura JWT e a senha do banco.</li>
+  </ul>
+  <h2>12.4 Acessibilidade e usabilidade</h2>
+  <ul>
+    <li>Botões e alvos de toque grandes (mín. 34–52 px), adequados ao uso rápido no salão.</li>
+    <li>Tela da cozinha com fundo escuro, alto contraste e fonte grande para leitura à distância.</li>
+    <li>Status sempre com texto e cor (não só cor); avisos sonoros e por vibração além do visual.</li>
+    <li>Foco visível na navegação por teclado; textos e mensagens em português claro.</li>
+  </ul>
+</section>
+
+<!-- ============================ 13 ============================ -->
+<section class="chapter">
+  <h1>13. Resultados e discussão</h1>
+  <h2>13.1 Resultados técnicos obtidos</h2>
+  <ul>
+    <li>MVP completo, com o fluxo de ponta a ponta exigido pelo guia funcionando: pedido → persistência → cozinha em tempo real → status → entrega → pagamento → histórico/indicadores.</li>
+    <li>14 requisitos funcionais e 8 não funcionais implementados; 10 histórias de usuário concluídas.</li>
+    <li>10 casos de teste funcionais executados e aprovados (um deles após correção de layout).</li>
+    <li>Medição automática do indicador principal implementada e verificada (0,27 s em teste de laboratório).</li>
+  </ul>
+
+  <h2>13.2 Resultados com o público (piloto)</h2>
+  <table>
+    <tr><th>Indicador</th><th class="c">Antes (papel)</th><th class="c">Com BarFlow</th><th class="c">Meta</th><th class="c">Atingiu?</th></tr>
+    <tr><td>Tempo registro → cozinha</td><td class="c"><span class="fill">[ ]</span></td><td class="c"><span class="fill">[ ]</span></td><td class="c">&lt; 30 s</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Conclusão da tarefa T1 sem ajuda</td><td class="c">—</td><td class="c"><span class="fill">[ ]</span></td><td class="c">≥ 80%</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Satisfação média (1–5)</td><td class="c">—</td><td class="c"><span class="fill">[ ]</span></td><td class="c">≥ 4,0</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Erros críticos</td><td class="c">—</td><td class="c"><span class="fill">[ ]</span></td><td class="c">0</td><td class="c"><span class="fill">[ ]</span></td></tr>
+    <tr><td>Pedidos com erro/esquecidos</td><td class="c"><span class="fill">[ ]</span></td><td class="c"><span class="fill">[ ]</span></td><td class="c">Reduzir</td><td class="c"><span class="fill">[ ]</span></td></tr>
+  </table>
+  <div class="callout">
+    <span class="t">Como apresentar (orientação do guia)</span>
+    <p>Evitar "os garçons gostaram do sistema". Preferir: "Dos <i>N</i> garçons, <i>X</i> registraram o pedido sem ajuda; o tempo até a cozinha caiu de <i>A</i> no papel para <i>B</i> no sistema; a satisfação média foi <i>C</i>/5."</p>
+  </div>
+
+  <h2>13.3 Discussão e limitações</h2>
+  <ul>
+    <li>O sistema depende da rede Wi-Fi e de um computador ligado; em caso de falha, o bar precisa de contingência (papel).</li>
+    <li>O indicador mede quando a tela da cozinha exibe o pedido. Se nenhuma tela estiver aberta, o tempo só é contado quando alguém abrir a tela, o que é intencional, pois reflete quando a cozinha realmente teve acesso ao pedido.</li>
+    <li>O MVP não separa bar e cozinha: bebidas também aparecem na tela da cozinha.</li>
+    <li>O aviso sonoro exige um toque inicial na tela, por restrição dos navegadores.</li>
+  </ul>
+  <div class="fill-block"><b>[PREENCHER]</b> Análise do que funcionou e do que não funcionou no piloto, com interpretação dos números.</div>
+</section>
+
+<!-- ============================ 14 ============================ -->
+<section class="chapter">
+  <h1>14. Impacto extensionista e rastreabilidade</h1>
+  <h2>14.1 Produto tecnológico × resultado extensionista</h2>
+  <table>
+    <tr><th style="width:30%">Produto tecnológico</th><th>Resultado que queremos observar no parceiro</th></tr>
+    <tr><td>Sistema de pedidos em tempo real (BarFlow)</td><td>Pedidos chegam à cozinha mais rápido e sem erro de leitura; garçons passam mais tempo no salão; a gestão passa a ter dados de tempo e volume de atendimento para decidir escalas e processos.</td></tr>
+  </table>
+  <div class="fill-block"><b>[PREENCHER]</b> Contribuição percebida pelo parceiro: depoimento do gestor (com autorização), mudanças observadas no trabalho da equipe e intenção de continuar usando.</div>
+
+  <h2>14.2 Rastreabilidade</h2>
+  <p class="small muted">Problema → Necessidade → Requisito → Funcionalidade → Teste → Indicador</p>
+  <table>
+    <tr><th>Problema</th><th>Requisito</th><th>Funcionalidade</th><th>Teste</th><th>Indicador</th></tr>
+    <tr><td>Demora para o pedido chegar à cozinha</td><td>RF04, RF05, RF10</td><td>Registro no celular + envio em tempo real</td><td>CT03, CT04</td><td>Tempo registro → cozinha</td></tr>
+    <tr><td>Comanda ilegível / observação esquecida</td><td>RF04, RF06</td><td>Observação por item destacada na cozinha</td><td>CT03, T2</td><td>Pedidos com erro</td></tr>
+    <tr><td>Garçom não sabe quando está pronto</td><td>RF07, RF08</td><td>Status + aviso sonoro/vibração</td><td>CT05, T3</td><td>Tempo de retirada (pronto → entregue)</td></tr>
+    <tr><td>Conta somada manualmente</td><td>RF11</td><td>Caixa com conta consolidada</td><td>CT07, T4</td><td>Conferência correta</td></tr>
+    <tr><td>Gestão sem dados</td><td>RF12, RF13</td><td>Histórico e indicadores</td><td>CT09, T5</td><td>Uso dos indicadores pelo gestor</td></tr>
+    <tr><td>Acesso indevido a funções</td><td>RNF04</td><td>Perfis e autorização no servidor</td><td>CT08</td><td>Tentativas bloqueadas</td></tr>
+  </table>
+</section>
+
+<!-- ============================ 15-16 ============================ -->
+<section class="chapter">
+  <h1>15. Próximos passos</h1>
+  <ol>
+    <li><b>Piloto no bar</b> e coleta da linha de base em papel (prioridade imediata).</li>
+    <li>Separar setores (bar × cozinha) por categoria, cada um com sua tela.</li>
+    <li>Impressão opcional de comanda na cozinha.</li>
+    <li>Fixar o IP do computador no roteador e instalar o sistema como "app" no celular (PWA).</li>
+    <li>Backup automático do banco.</li>
+    <li>Evolução para vários estabelecimentos (multi-bar), conforme proposta inicial.</li>
+  </ol>
+  <p><b>Continuidade:</b> o sistema roda em equipamento do próprio bar, sem custo de licença, e pode ser mantido pelo gestor com o script de inicialização documentado no README do projeto. <span class="fill">[PREENCHER: acordo de continuidade com o parceiro, se houver]</span></p>
+
+  <h1 style="margin-top:10mm">16. Uso de ferramentas de IA</h1>
+  <p>Em atendimento à seção 14 do guia, registramos que o desenvolvimento do código, a estrutura deste documento e a captura das telas contaram com apoio de assistente de IA (Claude Code, da Anthropic). A equipe permanece responsável por:</p>
+  <ul>
+    <li>compreender e conseguir explicar todo o código entregue (arquitetura, regras de negócio e fluxo de tempo real);</li>
+    <li>validar requisitos, bibliotecas e decisões técnicas;</li>
+    <li>realizar as entrevistas, os testes com usuários e a coleta de evidências reais, que a IA não substitui;</li>
+    <li>não enviar dados pessoais do parceiro a ferramentas externas.</li>
+  </ul>
+  <div class="fill-block"><b>[PREENCHER]</b> Descrever como a equipe revisou e testou o código gerado e quais partes cada integrante estudou/ajustou.</div>
+</section>
+
+<!-- ============================ 17 ============================ -->
+<section class="chapter">
+  <h1>17. Roteiro do pitch e demonstração (D6)</h1>
+  <table>
+    <tr><th style="width:6%">#</th><th>Conteúdo</th><th style="width:16%" class="c">Tempo</th></tr>
+    <tr><td>1</td><td>Problema, parceiro e público: o Bahia Resenha &amp; Bar e os pedidos em papel.</td><td class="c">45 s</td></tr>
+    <tr><td>2</td><td>Evidências do diagnóstico (entrevistas, tempo cronometrado no papel) e requisitos críticos.</td><td class="c">45 s</td></tr>
+    <tr><td>3</td><td>Objetivo e solução: BarFlow, pedidos em tempo real pelo celular.</td><td class="c">45 s</td></tr>
+    <tr><td>4</td><td>MVP, arquitetura (Angular + ASP.NET Core + SignalR + PostgreSQL).</td><td class="c">1 min</td></tr>
+    <tr><td>5</td><td><b>Demonstração ao vivo:</b> celular do garçom envia pedido → aparece na tela da cozinha com som → cozinha marca pronto → garçom recebe aviso → indicador atualizado.</td><td class="c">2–3 min</td></tr>
+    <tr><td>6</td><td>Testes e resultados: tabela antes × depois do piloto.</td><td class="c">2 min</td></tr>
+    <tr><td>7</td><td>Impacto, limitações e aprendizados.</td><td class="c">1 min</td></tr>
+    <tr><td>8</td><td>Próximos passos.</td><td class="c">45 s</td></tr>
+  </table>
+  <h3>Preparação da demonstração</h3>
+  <ul>
+    <li>Usar dois aparelhos (celular como garçom e notebook/tablet como cozinha), na mesma rede.</li>
+    <li>Ativar o som da cozinha antes de começar; usar apenas dados de demonstração.</li>
+    <li>Ter as Figuras 2 a 8 e um vídeo curto como contingência caso a rede falhe.</li>
+  </ul>
+  <div class="callout leaf">
+    <span class="t">Mensagem que o pitch precisa deixar clara</span>
+    <p>"Encontramos este problema real no Bahia Resenha &amp; Bar; construímos o BarFlow; testamos desta forma; obtivemos estas evidências; aprendemos isto; e estes são os próximos passos."</p>
+  </div>
+</section>
+
+<!-- ============================ 18 ============================ -->
+<section class="chapter">
+  <h1>18. Checklist final da equipe</h1>
+  <ul class="check">
+    <li class="n">Temos parceiro/público real e evidências do problema. <span class="fill">[coletar no bar]</span></li>
+    <li class="y">O problema está formulado de forma clara e delimitada.</li>
+    <li class="n">Os requisitos foram validados e priorizados com o parceiro. <span class="fill">[confirmar com o gestor]</span></li>
+    <li class="y">O escopo do MVP está documentado, inclusive o que ficou de fora.</li>
+    <li class="y">Existe pelo menos um fluxo funcional de ponta a ponta.</li>
+    <li class="n">O código está versionado e as principais decisões estão registradas. <span class="fill">[criar repositório Git]</span></li>
+    <li class="y">Executamos testes funcionais.</li>
+    <li class="n">Executamos alguma forma de validação com usuário/parceiro. <span class="fill">[piloto]</span></li>
+    <li class="n">Temos indicadores e evidências dos resultados. <span class="fill">[após o piloto]</span></li>
+    <li class="y">Tratamos LGPD, segurança e acessibilidade.</li>
+    <li class="n">O relatório descreve o que realmente aconteceu. <span class="fill">[completar campos amarelos]</span></li>
+    <li class="y">A demonstração final está preparada e possui contingência (prints neste documento).</li>
+    <li class="n">Conseguimos explicar a contribuição ao parceiro. <span class="fill">[depoimento do gestor]</span></li>
+  </ul>
+
+  <h1 style="margin-top:10mm">Referências</h1>
+  <ul class="small">
+    <li>BRASIL. Lei nº 13.709, de 14 de agosto de 2018. Lei Geral de Proteção de Dados Pessoais (LGPD).</li>
+    <li>GOOGLE. Angular: documentação oficial. Disponível em: https://angular.dev.</li>
+    <li>MICROSOFT. ASP.NET Core: documentação oficial. Disponível em: https://learn.microsoft.com/aspnet/core.</li>
+    <li>MICROSOFT. Introdução ao ASP.NET Core SignalR. Disponível em: https://learn.microsoft.com/aspnet/core/signalr.</li>
+    <li>MICROSOFT. Entity Framework Core. Disponível em: https://learn.microsoft.com/ef/core.</li>
+    <li>THE POSTGRESQL GLOBAL DEVELOPMENT GROUP. PostgreSQL Documentation. Disponível em: https://www.postgresql.org/docs.</li>
+    <li>W3C. Web Content Accessibility Guidelines (WCAG) 2.2. Disponível em: https://www.w3.org/TR/WCAG22.</li>
+    <li>Guia do Projeto de Extensão I – Análise e Desenvolvimento de Sistemas (material da disciplina).</li>
+  </ul>
+
+  <h1 style="margin-top:8mm">Anexos</h1>
+  <ul class="small">
+    <li><b>Anexo A</b> – Usuários iniciais do sistema e perfis: <code>gestor</code>, <code>garcom</code>, <code>cozinha</code>, <code>caixa</code> (senhas padrão devem ser trocadas antes do uso real).</li>
+    <li><b>Anexo B</b> – Como executar: <code>iniciar.ps1</code> sobe banco, front-end e API; acesso em <code>http://localhost:5204</code> e, na rede, <code>http://IP-DO-COMPUTADOR:5204</code>.</li>
+    <li><b>Anexo C</b> – <span class="fill">[PREENCHER: roteiro de entrevista, questionário de satisfação, termo de consentimento]</span></li>
+    <li><b>Anexo D</b> – <span class="fill">[PREENCHER: diário de bordo e registros das reuniões com o parceiro]</span></li>
+  </ul>
+</section>
+
+</body>
+</html>

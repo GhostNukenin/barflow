@@ -1,0 +1,219 @@
+<div class="page">
+  <div class="page-head">
+    <div class="tabs">
+      <button [class.active]="tab() === 'novo'" (click)="tab.set('novo')">📝 Novo pedido</button>
+      <button [class.active]="tab() === 'pedidos'" (click)="tab.set('pedidos')">
+        📋 Pedidos
+        @if (readyCount() > 0) {
+          <span class="badge">{{ readyCount() }}</span>
+        }
+      </button>
+    </div>
+    @if (!ui.soundEnabled()) {
+      <button class="btn sm" (click)="ui.enableSound()">🔔 Ativar aviso sonoro</button>
+    }
+  </div>
+
+  <!-- ================= NOVO PEDIDO ================= -->
+  @if (tab() === 'novo') {
+    @if (table() === null) {
+      <section class="card">
+        <div class="row between" style="margin-bottom: 12px">
+          <h2>Qual mesa?</h2>
+          <span class="muted small"><span class="dot busy"></span> com pedido em andamento</span>
+        </div>
+        <div class="table-grid">
+          @for (n of tables(); track n) {
+            <button class="table-btn" [class.busy]="busyTables().has(n)" (click)="selectTable(n)">
+              <span class="tn">{{ n }}</span>
+              @if (busyTables().get(n); as count) {
+                <span class="tb">{{ count }} em andamento</span>
+              }
+            </button>
+          }
+        </div>
+      </section>
+    } @else {
+      <div class="order-layout">
+        <section class="menu">
+          <div class="card table-bar">
+            <div>
+              <span class="muted small">Pedido para</span>
+              <h2>Mesa {{ table() }}</h2>
+            </div>
+            <button class="btn sm" (click)="changeTable()">Trocar mesa</button>
+          </div>
+
+          <input
+            class="input search"
+            type="search"
+            placeholder="Buscar no cardápio…"
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event)"
+          />
+
+          @if (!search()) {
+            <div class="chips">
+              <button class="chip" [class.active]="category() === null" (click)="category.set(null)">Tudo</button>
+              @for (c of visibleCategories(); track c.id) {
+                <button class="chip" [class.active]="category() === c.id" (click)="category.set(c.id)">{{ c.name }}</button>
+              }
+            </div>
+          }
+
+          <div class="products">
+            @for (p of filteredProducts(); track p.id) {
+              <div class="product" [class.in-cart]="qtyById().has(p.id)">
+                <button class="p-main" (click)="add(p)">
+                  <span class="p-name">{{ p.name }}</span>
+                  @if (p.description) {
+                    <span class="p-desc">{{ p.description }}</span>
+                  }
+                  <span class="p-price">{{ p.price | money }}</span>
+                </button>
+                <div class="stepper">
+                  @if (qtyById().get(p.id); as q) {
+                    <button class="btn icon sm" (click)="remove(p)" aria-label="Diminuir">−</button>
+                    <strong class="num">{{ q }}</strong>
+                  }
+                  <button class="btn icon sm primary" (click)="add(p)" aria-label="Adicionar">+</button>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty"><span class="big">🔎</span>Nenhum produto encontrado.</div>
+            }
+          </div>
+        </section>
+
+        <!-- Carrinho: lateral no computador/tablet, folha inferior no celular -->
+        <aside class="cart" [class.open]="cartOpen()">
+          <div class="cart-head">
+            <h3>Mesa {{ table() }} · {{ cartCount() }} {{ cartCount() === 1 ? 'item' : 'itens' }}</h3>
+            <button class="btn ghost sm close-sheet" (click)="cartOpen.set(false)">Fechar</button>
+          </div>
+
+          @if (cart().length === 0) {
+            <div class="empty small"><span class="big">🧺</span>Toque nos produtos para adicionar.</div>
+          } @else {
+            <ul class="cart-lines">
+              @for (l of cart(); track l.product.id) {
+                <li>
+                  <div class="row">
+                    <div class="grow">
+                      <strong>{{ l.product.name }}</strong>
+                      <div class="muted small num">{{ l.quantity }} × {{ l.product.price | money }}</div>
+                    </div>
+                    <div class="stepper">
+                      <button class="btn icon sm" (click)="remove(l.product)" aria-label="Diminuir">−</button>
+                      <strong class="num">{{ l.quantity }}</strong>
+                      <button class="btn icon sm" (click)="add(l.product)" aria-label="Aumentar">+</button>
+                    </div>
+                  </div>
+                  @if (noteOpenFor() === l.product.id || l.notes) {
+                    <input
+                      appAutofocus
+                      class="input note"
+                      placeholder="Ex.: sem cebola, bem gelada…"
+                      maxlength="200"
+                      [ngModel]="l.notes"
+                      (ngModelChange)="setNote(l.product, $event)"
+                    />
+                  } @else {
+                    <button class="link" (click)="noteOpenFor.set(l.product.id)">+ observação</button>
+                  }
+                </li>
+              }
+            </ul>
+
+            <label class="field">
+              <span>Observação geral do pedido</span>
+              <textarea class="input" rows="2" maxlength="300" [(ngModel)]="generalNotes" placeholder="Ex.: cliente tem alergia a camarão"></textarea>
+            </label>
+
+            <div class="total row between">
+              <span>Total</span>
+              <strong class="num">{{ cartTotal() | money }}</strong>
+            </div>
+
+            <button class="btn accent lg block" (click)="send()" [disabled]="sending()">
+              {{ sending() ? 'Enviando…' : '🚀 Enviar para a cozinha' }}
+            </button>
+            <button class="btn ghost sm block" (click)="clearOrder()">Descartar pedido</button>
+          }
+        </aside>
+      </div>
+
+      @if (cart().length > 0 && !cartOpen()) {
+        <button class="cart-bar" (click)="cartOpen.set(true)">
+          <span class="badge">{{ cartCount() }}</span>
+          <span>Revisar e enviar</span>
+          <strong class="num">{{ cartTotal() | money }}</strong>
+        </button>
+      }
+      @if (cartOpen()) {
+        <div class="sheet-backdrop" (click)="cartOpen.set(false)"></div>
+      }
+    }
+  }
+
+  <!-- ================= PEDIDOS ================= -->
+  @if (tab() === 'pedidos') {
+    <div class="row between wrap" style="margin-bottom: 12px">
+      <div class="chips">
+        <button class="chip" [class.active]="onlyMine()" (click)="onlyMine.set(true)">Meus pedidos</button>
+        <button class="chip" [class.active]="!onlyMine()" (click)="onlyMine.set(false)">Todos</button>
+      </div>
+      <span class="muted small">Entregues somem da lista depois de 30 min</span>
+    </div>
+
+    <div class="order-list">
+      @for (o of visibleOrders(); track o.id) {
+        <article class="card order" [class]="'o-' + o.status">
+          <div class="row between">
+            <div class="row">
+              <span class="mesa">Mesa {{ o.tableNumber }}</span>
+              <span class="faint small">#{{ o.id }}</span>
+            </div>
+            <span class="pill" [class]="'st-' + o.status">{{ STATUS_LABEL[o.status] }}</span>
+          </div>
+          <div class="items">
+            @for (i of o.items; track i.id) {
+              <div>
+                <strong class="num">{{ i.quantity }}×</strong> {{ i.productName }}
+                @if (i.notes) {
+                  <span class="note-tag">{{ i.notes }}</span>
+                }
+              </div>
+            }
+            @if (o.notes) {
+              <div class="note-tag">📌 {{ o.notes }}</div>
+            }
+          </div>
+          <div class="row between small muted">
+            <span>
+              {{ o.createdAt | hora }} · há {{ since(o.createdAt) }}
+              @if (!onlyMine()) {
+                · {{ o.waiterName }}
+              }
+            </span>
+            <strong class="num">{{ o.total | money }}</strong>
+          </div>
+          @if (o.status === 'Pendente' && !o.kitchenReceivedAt) {
+            <div class="small faint">Aguardando a tela da cozinha abrir…</div>
+          }
+          @if (o.status === 'Pronto') {
+            <button class="btn success block" (click)="setStatus(o, 'Entregue')">✓ Peguei e entreguei na mesa</button>
+          }
+          @if (o.status === 'Pendente' && o.waiterId === myId()) {
+            <button class="btn sm ghost danger" (click)="cancel(o)">Cancelar pedido</button>
+          }
+          @if (o.status === 'Entregue' && !o.paymentId) {
+            <button class="btn sm ghost" (click)="setStatus(o, 'Pronto')">Desfazer entrega</button>
+          }
+        </article>
+      } @empty {
+        <div class="empty card"><span class="big">🍹</span>Nenhum pedido em andamento.</div>
+      }
+    </div>
+  }
+</div>

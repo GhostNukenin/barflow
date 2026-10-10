@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: barflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: barflow
+      POSTGRES_USER: barflow
+      # Definida no arquivo .env (não versionado). O iniciar.ps1 cria um com senha aleatória.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Crie o arquivo .env (veja .env.example) ou rode iniciar.ps1}
+    ports:
+      - "5433:5432"
+    volumes:
+      - barflow-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barflow -d barflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  barflow-data:

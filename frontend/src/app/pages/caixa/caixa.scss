@@ -1,0 +1,41 @@
+.day { display: flex; flex-direction: column; padding: 10px 16px; min-width: 200px; }
+.day strong { font-size: 1.4rem; color: var(--leaf-600); }
+.layout { display: grid; grid-template-columns: 1fr 440px; gap: 16px; align-items: start; }
+.tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.tcard {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.tcard:hover { border-color: var(--sea-500); }
+.tcard.active { border-color: var(--sea-700); background: var(--sea-100); }
+.tnum { font-weight: 800; font-size: 1.15rem; white-space: nowrap; }
+.tval { font-size: 1.35rem; }
+.detail { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 12px; }
+.items td, .items th { padding: 7px 8px; }
+.link {
+  appearance: none; border: 0; background: none; padding: 0; font: inherit;
+  color: var(--sea-700); font-weight: 600; cursor: pointer; align-self: flex-start; font-size: 0.9rem;
+}
+.orders { display: flex; flex-direction: column; gap: 6px; }
+.o-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; font-size: 0.88rem; }
+.sum { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); border-radius: 12px; padding: 12px; }
+.grand { font-size: 1.3rem; border-top: 1px solid var(--border); padding-top: 8px; }
+.methods { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.methods .chip { text-align: center; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+  .detail { position: static; }
+  .methods { grid-template-columns: repeat(2, 1fr); }
+}
